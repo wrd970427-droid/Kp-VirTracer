@@ -104,6 +104,7 @@ run_mobsuite <- function(manifest_df, cfg, out_dir, tools) {
     fs::dir_create(sample_dir)
     status <- "not_run"
     warn_reason <- NA_character_
+    launch_error <- NA_character_
     log_info(glue::glue("[MOB-suite] ({i}/{nrow(manifest_df)}) {sid}"))
     if (!is.null(tools[["mob_recon"]]) && nzchar(tools[["mob_recon"]])) {
       res <- tryCatch(
@@ -111,7 +112,10 @@ run_mobsuite <- function(manifest_df, cfg, out_dir, tools) {
           tools[["mob_recon"]],
           args = c("-i", fasta, "-o", sample_dir, "-n", as.character(cfg$threads))
         ),
-        error = function(e) NULL
+        error = function(e) {
+          launch_error <<- conditionMessage(e)
+          NULL
+        }
       )
       status <- if (!is.null(res) && isTRUE(res$status == 0)) "ok" else "failed"
       if (!is.null(res)) {
@@ -120,6 +124,10 @@ run_mobsuite <- function(manifest_df, cfg, out_dir, tools) {
       }
       if (status == "failed") {
         warn_reason <- "mob_recon command failed; check mob_recon.stderr.log."
+      }
+      if (!is.na(launch_error)) {
+        readr::write_lines(launch_error, file.path(sample_dir, "mob_recon.launch_error.log"))
+        warn_reason <- "mob_recon failed to launch; check mob_recon.launch_error.log."
       }
     } else {
       warn_reason <- "mob_recon executable not available."
