@@ -1,65 +1,88 @@
 # Kp-VirTracer
 
-Kp-VirTracer is an R package + command-line workflow for analyzing
-**Klebsiella pneumoniae** genome assemblies and tracing virulence-related
-transmission signals.
+Kp-VirTracer is an R package + command-line workflow for tracing virulence gene
+transmission signals in **Klebsiella pneumoniae** genome assemblies.
 
-It uses a dual-layer architecture:
+## What This Tool Does
 
-- Conda environment layer: external tools (`kleborate`, `mob_recon`, `blastn`,
-  `makeblastdb`, `fastANI`, `prodigal`)
-- R package layer: workflow orchestration, parsing, summarization, and CLI entry
-
-## Project Overview
-
-- Input: a directory containing `*.fa`, `*.fasta`, or `*.fna` files
+- Input: a folder containing `*.fa`, `*.fasta`, or `*.fna` assemblies
 - Minimum sample count: `>= 2`
-- Output: standardized per-stage directories and summary tables
+- Core analyses: Kleborate, MOB-suite, virulence BLAST, ANI, summary reporting
+- Output: structured stage-by-stage results and final summary tables
+
+## Architecture
+
+- Environment layer (Conda/Mamba): external bioinformatics tools
+- R package layer: workflow orchestration, parsing, integration, and CLI
+
+---
 
 ## Installation
 
-### 1) Create conda environment
+### 1) Clone repository
 
 ```bash
-git clone <repo_url>
+git clone https://github.com/wrd970427-droid/Kp-VirTracer.git
 cd Kp-VirTracer
-bash install_env.sh
+```
+
+### 2) Create environment (Recommended: `mamba`)
+
+This project is designed to create the runtime environment from `environment.yml`.
+
+```bash
+mamba env create -f environment.yml
+mamba activate kpvirtracer
+```
+
+If `mamba` is unavailable, use:
+
+```bash
+conda env create -f environment.yml
 conda activate kpvirtracer
 ```
 
-### 2) Install the R package
+### 3) Install the R package locally
 
 ```bash
 Rscript install_package.R
 ```
 
-Optional GitHub install:
+---
 
-```r
-remotes::install_github("YOUR_GITHUB_USERNAME/Kp-VirTracer")
-```
+## Required Prerequisite: Build Virulence BLAST DB
 
-## Prerequisite: Build Virulence BLAST DB (Required)
-
-Before running Kp-VirTracer, you must create a nucleotide BLAST database
-from your virulence FASTA file.
+Before running Kp-VirTracer, you must build a nucleotide BLAST database from
+your virulence FASTA file:
 
 ```bash
 makeblastdb -in /path/to/virulence_genes.fasta -dbtype nucl -out /path/to/db/virulence_db
 ```
 
-Important:
+Important rules:
 
-- Runtime argument must be the BLAST DB prefix (`/path/to/db/virulence_db`)
-- Do not pass FASTA path to `--virulence-db`
-- Kp-VirTracer does not build this DB at runtime
+- `--virulence-db` must be the BLAST DB prefix from `makeblastdb -out`
+- Do not pass FASTA directly to `--virulence-db`
+- The pipeline does not create this database at runtime
 
-## Run
+---
 
-### Rscript entry (recommended)
+## Quick Start
+
+### Command line (recommended)
 
 ```bash
 Rscript run_kpvirtracer.R \
+  --input /path/to/fasta_dir \
+  --output /path/to/output_dir \
+  --virulence-db /path/to/db/virulence_db \
+  --threads 8
+```
+
+### Package CLI entry
+
+```bash
+KpVirTracer \
   --input /path/to/fasta_dir \
   --output /path/to/output_dir \
   --virulence-db /path/to/db/virulence_db \
@@ -78,29 +101,9 @@ run_kp_virtracer(
 )
 ```
 
-### Package CLI entry
+---
 
-```bash
-KpVirTracer \
-  --input /path/to/fasta_dir \
-  --output /path/to/output_dir \
-  --virulence-db /path/to/db/virulence_db \
-  --threads 8
-```
-
-## External Dependencies
-
-The R package does not auto-install external tools. Install them in the conda
-environment first:
-
-- `kleborate`
-- `mob_recon` (`mob_suite`)
-- `blastn`
-- `makeblastdb`
-- `fastANI`
-- `prodigal`
-
-## Output Structure
+## Output Layout
 
 ```text
 output/
@@ -123,6 +126,8 @@ Key result files:
 - `04_ani/ani_results.tsv`
 - `06_hgt/hgt_events.tsv`
 - `summary/final_summary.tsv`
+
+---
 
 ## Environment Check
 
