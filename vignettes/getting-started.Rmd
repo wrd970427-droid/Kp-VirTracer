@@ -1,0 +1,29 @@
+---
+title: "Kp-VirTracer Quick Start"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Kp-VirTracer Quick Start}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Kp-VirTracer requires an existing virulence BLAST nucleotide database.
+
+## 1) Build virulence BLAST DB (required)
+
+```bash
+makeblastdb -in /path/to/virulence_genes.fasta -dbtype nucl -out /path/to/db/virulence_db
+```
+
+Use the BLAST DB prefix (`/path/to/db/virulence_db`) as runtime input.
+Do not pass a FASTA path to `--virulence-db`.
+
+## 2) Run Kp-VirTracer
+
+```bash
+Rscript run_kpvirtracer.R \
+  --input /path/to/fasta_dir \
+  --output /path/to/output_dir \
+  --virulence-db /path/to/db/virulence_db \
+  --threads 8
+```

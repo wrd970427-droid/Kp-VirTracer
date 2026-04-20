@@ -1,0 +1,44 @@
+Package: KpVirTracer
+Type: Package
+Title: Klebsiella pneumoniae Virulence Tracing Pipeline
+Version: 0.0.1
+Authors@R: c(
+    person(
+      given = "KpVirTracer",
+      family = "Team",
+      role = c("aut", "cre"),
+      email = "maintainer@example.org"
+    )
+  )
+Description: A command-line oriented R pipeline for Klebsiella pneumoniae
+    whole-genome assembly analysis. It integrates Kleborate, MOB-suite,
+    BLAST, ANI, annotation, synteny, and HGT classification to provide
+    reproducible sample-level and pair-level reports.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1.0)
+Imports:
+    cli,
+    data.table,
+    dplyr,
+    fs,
+    furrr,
+    future,
+    glue,
+    jsonlite,
+    magrittr,
+    optparse,
+    processx,
+    purrr,
+    readr,
+    stringr,
+    tibble,
+    tidyr,
+    yaml
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

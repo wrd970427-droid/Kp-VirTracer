@@ -1,0 +1,30 @@
+name: kpvirtracer
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.10,<3.12
+  - r-base>=4.3
+  - r-remotes
+  - r-optparse
+  - r-yaml
+  - r-tidyverse
+  - r-data.table
+  - r-fs
+  - r-glue
+  - r-cli
+  - r-jsonlite
+  - r-furrr
+  - r-future
+  - bioconductor-biostrings
+  - kleborate
+  - blast
+  - fastani
+  - prodigal
+  - mash
+  - minimap2
+  - seqkit
+  - git
+  - pip
+  - mob_suite

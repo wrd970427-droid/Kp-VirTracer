@@ -1,0 +1,70 @@
+threads: 4
+
+tools:
+  kleborate: "kleborate"
+  mob_recon: "mob_recon"
+  blastn: "blastn"
+  makeblastdb: "makeblastdb"
+  fastani: "fastANI"
+  prodigal: "prodigal"
+
+input:
+  fasta_extensions:
+    - ".fa"
+    - ".fasta"
+    - ".fna"
+
+blast:
+  # Preferred to provide by CLI: --virulence-db /path/to/db/virulence_db
+  # This value must be the BLAST DB prefix built by makeblastdb -out.
+  virulence_db: null
+  identity: 95
+  coverage: 95
+  evalue: 1.0e-5
+  min_identity: 95
+  min_coverage: 95
+  task: "blastn-short"
+  virulence_genes:
+    - "iroB"
+    - "iucA"
+    - "peg344"
+    - "rmpA"
+    - "rmpA2"
+
+ani:
+  related_cutoff: 99
+  relatedness_threshold: 99
+  min_fraction: 0.2
+  frag_len: 3000
+  kmer: 16
+
+synteny:
+  upstream_window: 5
+  downstream_window: 5
+  cutoff: 7
+  upstream_cds: 5
+  downstream_cds: 5
+  vertical_cutoff: 7
+
+hgt:
+  plasmid_similarity_identity: 95
+  plasmid_similarity_coverage: 95
+  verify_identity: 95
+  verify_coverage: 95
+
+output:
+  write_intermediate: true
+  write_logs: true
+  write_debug_tables: false
+
+runtime:
+  threads: 4
+  keep_temp: false
+  resume: false
+  force: false
+  verbose: false
+  strict_tools: true
+
+logging:
+  level: "INFO"
+  file: "logs/kpvirtracer.log"

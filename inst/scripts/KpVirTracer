@@ -1,0 +1,15 @@
+#!/usr/bin/env Rscript
+
+suppressWarnings(suppressMessages(library(KpVirTracer)))
+args <- commandArgs(trailingOnly = TRUE)
+status <- tryCatch(
+  {
+    kp_virtracer_main(args = args)
+    0L
+  },
+  error = function(e) {
+    message("KpVirTracer CLI error: ", conditionMessage(e))
+    1L
+  }
+)
+quit(save = "no", status = status)
