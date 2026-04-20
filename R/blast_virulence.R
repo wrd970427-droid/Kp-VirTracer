@@ -83,6 +83,7 @@ run_virulence_blast <- function(sample_manifest, cfg, out_dir, tools) {
   purrr::map_dfr(seq_len(nrow(sample_manifest)), function(i) {
     sid <- sample_manifest$Sample_ID[i]
     fasta <- sample_manifest$Input_FASTA[i]
+    log_info(glue::glue("[BLAST] ({i}/{nrow(sample_manifest)}) {sid}"))
     out_file <- file.path(out_dir, paste0(sid, "_blast.tsv"))
     res <- run_external_tool(
       tools[["blastn"]],

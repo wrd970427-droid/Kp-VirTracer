@@ -18,6 +18,7 @@ run_pairwise_ani <- function(sample_manifest, cfg, out_dir, tools) {
   res <- purrr::map_dfr(seq_len(nrow(pairs)), function(i) {
     a <- pairs[i, 1]
     b <- pairs[i, 2]
+    log_info(glue::glue("[ANI] ({i}/{nrow(pairs)}) {a} vs {b}"))
     fa <- sample_manifest$Input_FASTA[match(a, sample_manifest$Sample_ID)]
     fb <- sample_manifest$Input_FASTA[match(b, sample_manifest$Sample_ID)]
     out_file <- file.path(out_dir, paste0(a, "__", b, ".tsv"))

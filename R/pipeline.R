@@ -22,6 +22,7 @@ run_kp_virtracer <- function(input,
                              resume = FALSE,
                              keep_temp = FALSE,
                              verbose = FALSE) {
+  log_info("Kp-VirTracer pipeline started.")
   cfg <- load_kp_virtracer_config(config = config, threads = threads)
   if (is.null(cfg$blast)) {
     cfg$blast <- list()
@@ -39,15 +40,23 @@ run_kp_virtracer <- function(input,
   if (nrow(manifest) < 2) {
     stop("At least 2 FASTA samples are required.", call. = FALSE)
   }
+  log_info(glue::glue("Discovered {nrow(manifest)} samples."))
   init_output_structure(output, force = force)
   write_sample_manifest(manifest, output)
+  log_info(glue::glue("Output initialized at: {output}"))
 
   tools <- check_required_tools(cfg)
+  log_info("Stage 1/6: running Kleborate.")
   klebo <- run_kleborate(manifest, cfg, file.path(output, "01_kleborate"), tools)
+  log_info("Stage 2/6: running MOB-suite.")
   mob <- run_mobsuite(manifest, cfg, file.path(output, "02_mobsuite"), tools)
+  log_info("Stage 3/6: running virulence BLAST.")
   vir <- run_virulence_blast(manifest, cfg, file.path(output, "03_blast_virulence"), tools)
+  log_info("Stage 4/6: running pairwise ANI.")
   ani <- run_pairwise_ani(manifest, cfg, file.path(output, "04_ani"), tools)
+  log_info("Stage 5/6: inferring HGT events.")
   hgt <- detect_hgt_events(NULL, vir, ani, cfg, file.path(output, "06_hgt"))
+  log_info("Stage 6/6: writing summaries.")
 
   sample_summary <- classify_hvkp_status(klebo, vir, cfg) %>%
     dplyr::left_join(
@@ -74,6 +83,7 @@ run_kp_virtracer <- function(input,
   readr::write_tsv(ani, file.path(output, "04_ani", "ani_results.tsv"))
   readr::write_tsv(hgt, file.path(output, "06_hgt", "hgt_events.tsv"))
   write_pipeline_summaries(sample_summary, vir, ani, hgt, output)
+  log_info("Kp-VirTracer pipeline completed.")
 
   invisible(list(
     manifest = manifest,
