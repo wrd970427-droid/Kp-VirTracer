@@ -237,14 +237,141 @@ output/
 
 Key files:
 
+- `02_mobsuite/plasmid_manifest.tsv`
 - `summary/sample_summary.tsv`
 - `summary/virulence_type_summary.tsv`
 - `summary/virulence_hits.tsv`
 - `03_blast_virulence/summary/sample_virulence_profile.tsv`
 - `03_blast_virulence/summary/virulence_type_calls.tsv`
 - `04_ani/ani_results.tsv`
+- `05_annotation/annotation_manifest.tsv`
+- `05_annotation/annotation_summary.tsv`
 - `06_hgt/hgt_events.tsv`
 - `summary/final_summary.tsv`
+
+## Result Tables And Column Dictionary
+
+### `02_mobsuite/plasmid_manifest.tsv`
+
+- `Sample_ID`: sample identifier derived from input FASTA filename.
+- `MOB_Status`: execution status of `mob_recon` (`ok`, `failed`, `not_run`).
+- `plasmid_id`: plasmid/contig identifier reported by MOB-suite.
+- `replicon_type`: replicon typing result.
+- `relaxase`: relaxase typing result.
+- `mobility`: predicted mobility class from MOB-suite.
+- `predicted_host_range`: host range estimate from MOB-suite.
+- `PTU`: PTU assignment from COPLA (if available); `NA` when unassigned/unavailable.
+- `PTU_Score`: COPLA confidence score; higher indicates more stable assignment.
+- `PTU_Host_Range`: COPLA host range annotation (if reported).
+- `PTU_Notes`: COPLA notes/warnings (for example, unassigned cluster size notes).
+
+Interpretation:
+
+- `PTU=NA` with notes like "could not be assigned" usually means the plasmid does not map confidently to a named PTU.
+- `MOB_Status=ok` but `PTU=NA` is possible and biologically plausible.
+
+### `03_blast_virulence/summary/virulence_hits.tsv`
+
+- `Sample_ID`: sample identifier.
+- `Gene`: virulence gene matched in BLAST database.
+- `Location`: inferred location (`chromosome` or `plasmid`) using MOB contig typing.
+- `Contig_ID`: matched query contig identifier.
+- `Start`, `End`, `Strand`: hit coordinates and orientation on query contig.
+- `Identity`: BLAST percent identity.
+- `Coverage`: estimated coverage percentage for the hit.
+- `Evalue`: BLAST e-value.
+- `Bitscore`: BLAST bitscore.
+- `Plasmid_ID`: reserved field (currently may be `NA`).
+- `Source_FASTA`: original assembly FASTA path.
+
+Interpretation:
+
+- High-confidence hits should satisfy your configured identity/coverage/evalue thresholds.
+- `Location` is central for downstream `p-hvKp/c-hvKp/pc-hvKp` classification.
+
+### `03_blast_virulence/summary/sample_virulence_profile.tsv`
+
+- `Sample_ID`: sample identifier.
+- `Virulence_Genes_All`: all detected virulence genes.
+- `Chromosomal_Genes`: subset detected on chromosome contigs.
+- `Plasmid_Genes`: subset detected on plasmid contigs.
+- `n_chrom_hits`: count of chromosome-assigned hits.
+- `n_plasmid_hits`: count of plasmid-assigned hits.
+- `Virulence_Location`: `chromosome`, `plasmid`, `both`, or `absent`.
+- `Virulence_Type`: final per-sample type (`c-hvKp`, `p-hvKp`, `pc-hvKp`, `nKp`).
+
+### `03_blast_virulence/summary/virulence_type_calls.tsv`
+
+- `Sample_ID`: sample identifier.
+- `Virulence_Location`: location category used for typing.
+- `Virulence_Type`: final virulence type.
+- `n_chrom_hits`: chromosome hit count.
+- `n_plasmid_hits`: plasmid hit count.
+
+### `summary/sample_summary.tsv`
+
+- `Sample_ID`: sample identifier.
+- `Virulence_Type`: one of `p-hvKp/c-hvKp/pc-hvKp/nKp`.
+- `hvKp_Status`: compact status (`hvKp` vs `nKp`).
+- `Virulence_Genes`, `Chromosomal_Genes`, `Plasmid_Genes`: gene lists used for typing.
+- `Virulence_Location`: `chromosome/plasmid/both/absent`.
+- `Plasmid_Count`: number of plasmid rows in plasmid manifest.
+- `Replicon_Types`: merged replicon annotations.
+- `PTU_Types`: merged PTU annotations.
+- `Kleborate_Virulence_Score`: Kleborate virulence score when available.
+
+### `summary/virulence_type_summary.tsv`
+
+- `Virulence_Type`: virulence class.
+- `n_samples`: number of samples in each class.
+
+### `04_ani/ani_results.tsv`
+
+- `Sample_A`, `Sample_B`: compared virulent samples.
+- `ANI`: average nucleotide identity.
+- `FragmentsMapped`: mapped fragment count reported by FastANI.
+- `FragmentsTotal`: total fragments considered.
+- `Relatedness`: `Related`, `Unrelated`, or `Unknown` (based on ANI threshold and output availability).
+
+Interpretation:
+
+- ANI runs only for virulent samples and only on chromosome-only FASTA.
+- `Relatedness=Related` means ANI met/exceeded `--ani-relatedness`.
+
+### `05_annotation/annotation_manifest.tsv`
+
+- `Sample_ID`: sample identifier.
+- `Contig_ID`: contig identifier.
+- `molecule_type`: `chromosome` or `plasmid` (from MOB contig report).
+- `n_virulence_hits`: count of virulence hits on this contig.
+- `Virulence_Genes`: comma-separated virulence genes detected on this contig.
+- `Prodigal_Status`: status of prodigal run for that sample (`ok`, `failed`, `not_run`).
+
+### `05_annotation/annotation_summary.tsv`
+
+- `Sample_ID`: sample identifier.
+- `n_contigs`: number of contigs included in annotation manifest.
+- `n_virulence_contigs`: number of contigs with at least one virulence hit.
+- `Prodigal_Status`: sample-level prodigal status.
+
+### `06_hgt/hgt_events.tsv`
+
+- `Sample_A`, `Sample_B`: sample pair.
+- `Gene`: shared virulence gene considered for event inference.
+- `Location_A`, `Location_B`: gene location in each sample.
+- `Plasmid_A`, `Plasmid_B`: plasmid flag placeholders for plasmid-associated entries.
+- `HGT_Type`: event heuristic label (`location_switch`, `shared_plasmid_gene`, `shared_chromosomal_gene`).
+- `Confirmed`: heuristic confirmation flag using ANI/location consistency.
+- `pident`, `qcov`: aggregated identity/coverage evidence from virulence hits.
+- `Synteny_Index`: placeholder/basic synteny score (current implementation baseline).
+- `Evidence_Files`: primary files used for inference.
+
+### `summary/final_summary.tsv`
+
+- `n_samples`: total number of analyzed samples.
+- `n_virulence`: number of samples with virulence type not equal to `nKp`.
+- `n_ani_pairs`: number of ANI pairwise comparisons performed.
+- `n_hgt_events`: number of inferred HGT rows.
 
 ## Virulence Typing Rules
 
