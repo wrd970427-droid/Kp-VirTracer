@@ -24,6 +24,7 @@ pick_kleborate_table <- function(txt_files) {
 }
 
 run_kleborate <- function(manifest_df, cfg, out_dir, tools) {
+  emit_warn <- isTRUE(cfg$runtime$verbose)
   raw_dir <- file.path(out_dir, "kleborate_raw")
   fs::dir_create(raw_dir)
   out_rows <- purrr::map_dfr(seq_len(nrow(manifest_df)), function(i) {
@@ -85,7 +86,7 @@ run_kleborate <- function(manifest_df, cfg, out_dir, tools) {
       warn_reason <- "kleborate executable not available."
     }
 
-    if (!is.na(warn_reason)) {
+    if (emit_warn && !is.na(warn_reason)) {
       log_warn(glue::glue("[Kleborate] {sid}: {warn_reason}"))
     }
     tibble::tibble(

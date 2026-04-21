@@ -186,9 +186,16 @@ resolve_copla_runtime <- function(cfg) {
   conda_bin <- dplyr::coalesce(c0$conda_bin, "conda")
   python_bin <- dplyr::coalesce(c0$python_bin, "python3")
   topology <- dplyr::coalesce(c0$topology, "linear")
+  project_root <- normalizePath(dirname(dirname(script_path)), winslash = "/", mustWork = FALSE)
 
   if (is.null(script_path) || !nzchar(script_path) || !file.exists(script_path)) {
     return(list(ready = FALSE, reason = "copla script_path is not configured or not found."))
+  }
+  if (!dir.exists(project_root)) {
+    return(list(ready = FALSE, reason = "copla project root cannot be resolved from script_path."))
+  }
+  if (!file.exists(file.path(project_root, "bin", "get_ani_identity.pl"))) {
+    return(list(ready = FALSE, reason = "COPLA helper script bin/get_ani_identity.pl not found under project root."))
   }
   if (is.null(pickle_path) || !nzchar(pickle_path) || !file.exists(pickle_path)) {
     return(list(ready = FALSE, reason = "copla pickle_path is not configured or not found."))
@@ -208,6 +215,7 @@ resolve_copla_runtime <- function(cfg) {
     conda_env = conda_env,
     python_bin = python_bin,
     script_path = script_path,
+    project_root = project_root,
     pickle_path = pickle_path,
     fofn_path = fofn_path,
     topology = topology
@@ -277,21 +285,17 @@ run_copla_for_sample <- function(sid, sample_fasta, sample_dir, copla_runtime, f
     "-t", copla_runtime$topology
   )
   res <- tryCatch(
-    run_external_tool(copla_runtime$conda, args = args),
+    run_external_tool(copla_runtime$conda, args = args, wd = copla_runtime$project_root),
     error = function(e) list(status = 1L, stdout = "", stderr = conditionMessage(e))
   )
   readr::write_lines(as.character(res$stdout), file.path(copla_dir, "copla.stdout.log"))
   readr::write_lines(as.character(res$stderr), file.path(copla_dir, "copla.stderr.log"))
   if (!isTRUE(res$status == 0)) {
-    log_warn(glue::glue("[MOB-suite] {sid}: COPLA execution failed; PTU set to NA."))
     return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric()))
   }
 
   pred <- file.path(out_dir, "query.ptu_prediction.tsv")
   out <- read_copla_prediction(pred, sid)
-  if (nrow(out) == 0) {
-    log_warn(glue::glue("[MOB-suite] {sid}: COPLA finished but no PTU prediction parsed; PTU set to NA."))
-  }
   out
 }
 
@@ -333,8 +337,9 @@ merge_ptu_from_copla <- function(rows, ptu_rows) {
 
 run_mobsuite <- function(manifest_df, cfg, out_dir, tools) {
   fs::dir_create(out_dir)
+  emit_warn <- isTRUE(cfg$runtime$verbose)
   copla_runtime <- resolve_copla_runtime(cfg)
-  if (!isTRUE(copla_runtime$ready)) {
+  if (emit_warn && !isTRUE(copla_runtime$ready)) {
     log_warn(glue::glue("[MOB-suite] COPLA environment not configured correctly ({copla_runtime$reason}); PTU will be NA."))
   }
 
@@ -380,7 +385,7 @@ run_mobsuite <- function(manifest_df, cfg, out_dir, tools) {
     if (is.null(reports$mobtyper) && is.null(reports$contig) && is.na(warn_reason)) {
       warn_reason <- "No MOB-suite report found (expected mobtyper_results(.txt) or contig_report.txt)."
     }
-    if (!is.na(warn_reason)) {
+    if (emit_warn && !is.na(warn_reason)) {
       log_warn(glue::glue("[MOB-suite] {sid}: {warn_reason}"))
     }
     per_sample <- build_mob_manifest_rows(sid, reports, status)
