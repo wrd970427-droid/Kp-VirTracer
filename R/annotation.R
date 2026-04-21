@@ -58,7 +58,7 @@ run_prodigal_annotation <- function(sample_manifest, virulence_hits, cfg, out_di
       dplyr::group_by(Contig_ID) %>%
       dplyr::summarise(
         Virulence_Genes = paste(sort(unique(Gene)), collapse = ","),
-        n_virulence_hits = n(),
+        n_virulence_hits = dplyr::n(),
         .groups = "drop"
       )
     ann <- contigs %>%
