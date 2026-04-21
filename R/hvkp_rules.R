@@ -1,7 +1,6 @@
 # hvKp/nKp rule engine.
 
 classify_hvkp_status <- function(kleborate_summary, virulence_hits, cfg) {
-  genes <- cfg$blast$virulence_genes
   sample_ids <- unique(kleborate_summary$Sample_ID)
   hit_summary <- virulence_hits %>%
     dplyr::group_by(Sample_ID) %>%
@@ -18,17 +17,33 @@ classify_hvkp_status <- function(kleborate_summary, virulence_hits, cfg) {
       Virulence_Genes = dplyr::coalesce(Virulence_Genes, ""),
       Chromosomal_Genes = dplyr::coalesce(Chromosomal_Genes, ""),
       Plasmid_Genes = dplyr::coalesce(Plasmid_Genes, ""),
-      hvKp_Status = dplyr::if_else(
-        (!is.na(Kleborate_Virulence_Score) & Kleborate_Virulence_Score >= 3) |
-          stringr::str_count(Virulence_Genes, ",") + (Virulence_Genes != "") >= 2,
-        "hvKp", "nKp"
-      ),
       Virulence_Location = dplyr::case_when(
         Chromosomal_Genes != "" & Plasmid_Genes != "" ~ "both",
         Chromosomal_Genes != "" ~ "chromosome",
         Plasmid_Genes != "" ~ "plasmid",
         TRUE ~ "absent"
-      )
+      ),
+      Virulence_Type = dplyr::case_when(
+        Virulence_Location == "both" ~ "pc-hvKp",
+        Virulence_Location == "chromosome" ~ "c-hvKp",
+        Virulence_Location == "plasmid" ~ "p-hvKp",
+        TRUE ~ "nKp"
+      ),
+      hvKp_Status = dplyr::if_else(Virulence_Type == "nKp", "nKp", "hvKp")
+    ) %>%
+    dplyr::select(
+      Sample_ID,
+      Virulence_Type,
+      hvKp_Status,
+      Virulence_Location,
+      Virulence_Genes,
+      Chromosomal_Genes,
+      Plasmid_Genes,
+      Kleborate_Virulence_Score
+    ) %>%
+    dplyr::arrange(
+      dplyr::desc(Virulence_Type != "nKp"),
+      Sample_ID
     )
   out
 }

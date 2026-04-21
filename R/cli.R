@@ -17,6 +17,14 @@ kp_virtracer_main <- function(args = commandArgs(trailingOnly = TRUE)) {
     parser, "--virulence-db", type = "character", default = NULL,
     help = "BLAST DB prefix built by makeblastdb -out (required)"
   )
+  parser <- optparse::add_option(parser, "--blast-task", type = "character", default = NULL)
+  parser <- optparse::add_option(parser, "--blast-evalue", type = "double", default = NULL)
+  parser <- optparse::add_option(parser, "--blast-min-identity", type = "double", default = NULL)
+  parser <- optparse::add_option(parser, "--blast-min-coverage", type = "double", default = NULL)
+  parser <- optparse::add_option(parser, "--ani-relatedness", type = "double", default = NULL)
+  parser <- optparse::add_option(parser, "--ani-min-fraction", type = "double", default = NULL)
+  parser <- optparse::add_option(parser, "--ani-frag-len", type = "integer", default = NULL)
+  parser <- optparse::add_option(parser, "--ani-kmer", type = "integer", default = NULL)
   parser <- optparse::add_option(parser, "--force", action = "store_true", default = FALSE)
   parser <- optparse::add_option(parser, "--resume", action = "store_true", default = FALSE)
   parser <- optparse::add_option(parser, "--keep-temp", action = "store_true", default = FALSE)
@@ -33,6 +41,14 @@ kp_virtracer_main <- function(args = commandArgs(trailingOnly = TRUE)) {
     threads = opts$threads,
     config = opts$config,
     virulence_db = opts$`virulence-db`,
+    blast_task = opts$`blast-task`,
+    blast_evalue = opts$`blast-evalue`,
+    blast_min_identity = opts$`blast-min-identity`,
+    blast_min_coverage = opts$`blast-min-coverage`,
+    ani_relatedness = opts$`ani-relatedness`,
+    ani_min_fraction = opts$`ani-min-fraction`,
+    ani_frag_len = opts$`ani-frag-len`,
+    ani_kmer = opts$`ani-kmer`,
     force = opts$force,
     resume = opts$resume,
     keep_temp = opts$`keep-temp`,

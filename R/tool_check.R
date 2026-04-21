@@ -19,14 +19,21 @@ check_required_tools <- function(cfg) {
 check_external_tools <- function(cfg) {
   req <- unlist(cfg$tools, use.names = TRUE)
   resolved <- vapply(req, resolve_tool_path, character(1))
+  optional_tools <- c("copla")
   missing <- names(resolved)[resolved == ""]
-  if (length(missing) > 0) {
-    msg <- glue::glue("Missing required tools: {paste(missing, collapse = ', ')}")
+  missing_required <- setdiff(missing, optional_tools)
+  missing_optional <- intersect(missing, optional_tools)
+
+  if (length(missing_required) > 0) {
+    msg <- glue::glue("Missing required tools: {paste(missing_required, collapse = ', ')}")
     if (isTRUE(cfg$runtime$strict_tools)) {
       stop(msg, call. = FALSE)
     } else {
       log_warn(msg)
     }
+  }
+  if (length(missing_optional) > 0) {
+    log_warn(glue::glue("Optional tools not found: {paste(missing_optional, collapse = ', ')}"))
   }
   resolved
 }

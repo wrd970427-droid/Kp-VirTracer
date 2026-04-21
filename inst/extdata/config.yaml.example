@@ -8,6 +8,17 @@ tools:
   fastani: "fastANI"
   prodigal: "prodigal"
 
+copla:
+  # COPLA is optional. If not configured correctly, workflow continues and PTU stays NA.
+  enabled: false
+  conda_bin: "conda"
+  conda_env: "copla"
+  python_bin: "python3"
+  script_path: "/abs/path/to/COPLA/bin/copla.py"
+  pickle_path: "/abs/path/to/COPLA/databases/Copla_RS84/RS84f_sHSBM.pickle"
+  fofn_path: "/abs/path/to/COPLA/databases/Copla_RS84/CoplaDB.fofn"
+  topology: "linear"
+
 input:
   fasta_extensions:
     - ".fa"
