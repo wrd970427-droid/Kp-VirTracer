@@ -376,14 +376,27 @@ merge_ptu_from_copla <- function(rows, ptu_rows) {
       by = c("Sample_ID", "plasmid_id_norm")
     ) %>%
     dplyr::left_join(
-      ptu2 %>% dplyr::select(Sample_ID, plasmid_id_norm, PTU_Host_Range, PTU_Notes),
+      ptu2 %>% dplyr::select(
+        Sample_ID,
+        plasmid_id_norm,
+        PTU_Host_Range_copla = PTU_Host_Range,
+        PTU_Notes_copla = PTU_Notes
+      ),
       by = c("Sample_ID", "plasmid_id_norm")
     ) %>%
     dplyr::mutate(
       PTU = dplyr::coalesce(PTU_copla, PTU),
-      PTU_Score = dplyr::coalesce(PTU_Score_copla, PTU_Score)
+      PTU_Score = dplyr::coalesce(PTU_Score_copla, PTU_Score),
+      PTU_Host_Range = dplyr::coalesce(PTU_Host_Range_copla, PTU_Host_Range),
+      PTU_Notes = dplyr::coalesce(PTU_Notes_copla, PTU_Notes)
     ) %>%
-    dplyr::select(-plasmid_id_norm, -PTU_copla, -PTU_Score_copla)
+    dplyr::select(
+      -plasmid_id_norm,
+      -PTU_copla,
+      -PTU_Score_copla,
+      -PTU_Host_Range_copla,
+      -PTU_Notes_copla
+    )
 
   fallback <- ptu_rows %>% dplyr::filter(is.na(plasmid_id) | plasmid_id == "")
   if (nrow(fallback) > 0) {
