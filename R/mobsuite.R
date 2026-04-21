@@ -88,7 +88,9 @@ build_mob_manifest_rows <- function(sid, reports, status) {
           c("predicted_host_range_overall_rank", "predicted_host_range", "host_range")
         ),
         PTU = NA_character_,
-        PTU_Score = NA_real_
+        PTU_Score = NA_real_,
+        PTU_Host_Range = NA_character_,
+        PTU_Notes = NA_character_
       )
     )
   }
@@ -114,7 +116,9 @@ build_mob_manifest_rows <- function(sid, reports, status) {
             c("predicted_host_range_overall_rank", "predicted_host_range", "mash_neighbor_identification")
           ),
           PTU = NA_character_,
-          PTU_Score = NA_real_
+          PTU_Score = NA_real_,
+          PTU_Host_Range = NA_character_,
+          PTU_Notes = NA_character_
         )
       )
     }
@@ -124,7 +128,7 @@ build_mob_manifest_rows <- function(sid, reports, status) {
     Sample_ID = sid, MOB_Status = status, plasmid_id = NA_character_,
     replicon_type = NA_character_, relaxase = NA_character_,
     mobility = NA_character_, predicted_host_range = NA_character_,
-    PTU = NA_character_, PTU_Score = NA_real_
+    PTU = NA_character_, PTU_Score = NA_real_, PTU_Host_Range = NA_character_, PTU_Notes = NA_character_
   )
 }
 
@@ -222,31 +226,78 @@ resolve_copla_runtime <- function(cfg) {
   )
 }
 
+find_copla_prediction_file <- function(out_dir) {
+  if (!dir.exists(out_dir)) {
+    return(NA_character_)
+  }
+  files <- list.files(out_dir, pattern = "ptu_prediction\\.tsv$", full.names = TRUE)
+  if (length(files) == 0) {
+    return(NA_character_)
+  }
+  files[1]
+}
+
 read_copla_prediction <- function(path, sid) {
   if (!file.exists(path) || file.info(path)$size == 0) {
-    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric()))
+    return(
+      tibble::tibble(
+        Sample_ID = character(),
+        plasmid_id = character(),
+        PTU = character(),
+        PTU_Score = numeric(),
+        PTU_Host_Range = character(),
+        PTU_Notes = character()
+      )
+    )
   }
   d <- tryCatch(readr::read_tsv(path, show_col_types = FALSE), error = function(e) NULL)
   if (is.null(d) || nrow(d) == 0) {
-    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric()))
+    return(
+      tibble::tibble(
+        Sample_ID = character(),
+        plasmid_id = character(),
+        PTU = character(),
+        PTU_Score = numeric(),
+        PTU_Host_Range = character(),
+        PTU_Notes = character()
+      )
+    )
   }
   nms <- names(d)
   ptu_col <- dplyr::coalesce(
+    dplyr::if_else(any(grepl("^#?predicted$", nms, ignore.case = TRUE)), nms[grepl("^#?predicted$", nms, ignore.case = TRUE)][1], NA_character_),
     dplyr::if_else(any(grepl("^ptu$", nms, ignore.case = TRUE)), nms[grepl("^ptu$", nms, ignore.case = TRUE)][1], NA_character_),
     dplyr::if_else(any(grepl("ptu", nms, ignore.case = TRUE)), nms[grepl("ptu", nms, ignore.case = TRUE)][1], NA_character_)
   )
   score_col <- dplyr::if_else(any(grepl("score", nms, ignore.case = TRUE)), nms[grepl("score", nms, ignore.case = TRUE)][1], NA_character_)
+  host_range_col <- dplyr::if_else(any(grepl("host[_ ]?range", nms, ignore.case = TRUE)), nms[grepl("host[_ ]?range", nms, ignore.case = TRUE)][1], NA_character_)
+  notes_col <- dplyr::if_else(any(grepl("notes?", nms, ignore.case = TRUE)), nms[grepl("notes?", nms, ignore.case = TRUE)][1], NA_character_)
   id_col <- dplyr::if_else(any(grepl("query|plasmid|seq|accession", nms, ignore.case = TRUE)), nms[grepl("query|plasmid|seq|accession", nms, ignore.case = TRUE)][1], NA_character_)
   if (is.na(ptu_col)) {
-    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric()))
+    return(
+      tibble::tibble(
+        Sample_ID = character(),
+        plasmid_id = character(),
+        PTU = character(),
+        PTU_Score = numeric(),
+        PTU_Host_Range = character(),
+        PTU_Notes = character()
+      )
+    )
   }
   if (is.na(id_col)) {
+    ptu_val <- as.character(d[[ptu_col]][1])
+    if (!is.na(ptu_val) && ptu_val %in% c("-", "NA", "N/A", "")) {
+      ptu_val <- NA_character_
+    }
     return(
       tibble::tibble(
         Sample_ID = sid,
         plasmid_id = NA_character_,
-        PTU = as.character(d[[ptu_col]][1]),
-        PTU_Score = if (!is.na(score_col)) suppressWarnings(as.numeric(d[[score_col]][1])) else NA_real_
+        PTU = ptu_val,
+        PTU_Score = if (!is.na(score_col)) suppressWarnings(as.numeric(d[[score_col]][1])) else NA_real_,
+        PTU_Host_Range = if (!is.na(host_range_col)) as.character(d[[host_range_col]][1]) else NA_character_,
+        PTU_Notes = if (!is.na(notes_col)) as.character(d[[notes_col]][1]) else NA_character_
       )
     )
   }
@@ -254,18 +305,23 @@ read_copla_prediction <- function(path, sid) {
     Sample_ID = sid,
     plasmid_id = normalize_record_id(d[[id_col]]),
     PTU = as.character(d[[ptu_col]]),
-    PTU_Score = if (!is.na(score_col)) suppressWarnings(as.numeric(d[[score_col]])) else NA_real_
+    PTU_Score = if (!is.na(score_col)) suppressWarnings(as.numeric(d[[score_col]])) else NA_real_,
+    PTU_Host_Range = if (!is.na(host_range_col)) as.character(d[[host_range_col]]) else NA_character_,
+    PTU_Notes = if (!is.na(notes_col)) as.character(d[[notes_col]]) else NA_character_
   ) %>%
-    dplyr::filter(!is.na(PTU), PTU != "")
+    dplyr::mutate(
+      PTU = dplyr::if_else(PTU %in% c("-", "NA", "N/A", ""), NA_character_, PTU)
+  ) %>%
+    dplyr::filter(!(is.na(PTU) & (is.na(PTU_Notes) | PTU_Notes == "")))
 }
 
 run_copla_for_sample <- function(sid, sample_fasta, sample_dir, copla_runtime, force = FALSE) {
   if (!isTRUE(copla_runtime$ready)) {
-    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric()))
+    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric(), PTU_Host_Range = character(), PTU_Notes = character()))
   }
   plasmid_fa <- extract_plasmid_fasta(sample_dir, sample_fasta)
   if (is.null(plasmid_fa)) {
-    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric()))
+    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric(), PTU_Host_Range = character(), PTU_Notes = character()))
   }
 
   copla_dir <- file.path(sample_dir, "copla")
@@ -291,10 +347,13 @@ run_copla_for_sample <- function(sid, sample_fasta, sample_dir, copla_runtime, f
   readr::write_lines(as.character(res$stdout), file.path(copla_dir, "copla.stdout.log"))
   readr::write_lines(as.character(res$stderr), file.path(copla_dir, "copla.stderr.log"))
   if (!isTRUE(res$status == 0)) {
-    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric()))
+    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric(), PTU_Host_Range = character(), PTU_Notes = character()))
   }
 
-  pred <- file.path(out_dir, "query.ptu_prediction.tsv")
+  pred <- find_copla_prediction_file(out_dir)
+  if (is.na(pred)) {
+    return(tibble::tibble(Sample_ID = character(), plasmid_id = character(), PTU = character(), PTU_Score = numeric(), PTU_Host_Range = character(), PTU_Notes = character()))
+  }
   out <- read_copla_prediction(pred, sid)
   out
 }
@@ -316,6 +375,10 @@ merge_ptu_from_copla <- function(rows, ptu_rows) {
       ptu2 %>% dplyr::select(Sample_ID, plasmid_id_norm, PTU_copla = PTU, PTU_Score_copla = PTU_Score),
       by = c("Sample_ID", "plasmid_id_norm")
     ) %>%
+    dplyr::left_join(
+      ptu2 %>% dplyr::select(Sample_ID, plasmid_id_norm, PTU_Host_Range, PTU_Notes),
+      by = c("Sample_ID", "plasmid_id_norm")
+    ) %>%
     dplyr::mutate(
       PTU = dplyr::coalesce(PTU_copla, PTU),
       PTU_Score = dplyr::coalesce(PTU_Score_copla, PTU_Score)
@@ -326,10 +389,14 @@ merge_ptu_from_copla <- function(rows, ptu_rows) {
   if (nrow(fallback) > 0) {
     first_ptu <- fallback$PTU[1]
     first_score <- fallback$PTU_Score[1]
+    first_host <- fallback$PTU_Host_Range[1]
+    first_notes <- fallback$PTU_Notes[1]
     out <- out %>%
       dplyr::mutate(
         PTU = dplyr::if_else(is.na(PTU) | PTU == "", first_ptu, PTU),
-        PTU_Score = dplyr::if_else(is.na(PTU_Score), first_score, PTU_Score)
+        PTU_Score = dplyr::if_else(is.na(PTU_Score), first_score, PTU_Score),
+        PTU_Host_Range = dplyr::if_else(is.na(PTU_Host_Range) | PTU_Host_Range == "", first_host, PTU_Host_Range),
+        PTU_Notes = dplyr::if_else(is.na(PTU_Notes) | PTU_Notes == "", first_notes, PTU_Notes)
       )
   }
   out

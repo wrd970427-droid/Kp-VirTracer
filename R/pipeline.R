@@ -135,9 +135,17 @@ run_kp_virtracer <- function(input,
     out_dir = file.path(output, "04_ani")
   )
   ani <- run_pairwise_ani(chr_manifest, cfg, file.path(output, "04_ani"), tools)
-  log_info("Stage 5/6: inferring HGT events.")
-  hgt <- detect_hgt_events(NULL, vir, ani, cfg, file.path(output, "06_hgt"))
-  log_info("Stage 6/6: writing summaries.")
+  log_info("Stage 5/6: running annotation.")
+  ann <- run_prodigal_annotation(
+    sample_manifest = manifest,
+    virulence_hits = vir,
+    cfg = cfg,
+    out_dir = file.path(output, "05_annotation"),
+    tools = tools,
+    mobsuite_dir = file.path(output, "02_mobsuite")
+  )
+  log_info("Stage 6/6: inferring HGT events and writing summaries.")
+  hgt <- detect_hgt_events(NULL, vir, ani, cfg, file.path(output, "06_hgt"), annotation_df = ann)
 
   readr::write_tsv(ani, file.path(output, "04_ani", "ani_results.tsv"))
   readr::write_tsv(hgt, file.path(output, "06_hgt", "hgt_events.tsv"))
@@ -149,6 +157,7 @@ run_kp_virtracer <- function(input,
     sample_summary = sample_summary,
     virulence_hits = vir,
     ani_results = ani,
+    annotation = ann,
     hgt_events = hgt
   ))
 }
