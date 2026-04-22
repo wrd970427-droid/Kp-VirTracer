@@ -12,6 +12,30 @@ Hypervirulence in *K. pneumoniae* can be associated with plasmid-borne, chromoso
 - classify each sample into `p-hvKp`, `c-hvKp`, `pc-hvKp`, or `nKp`
 - run ANI only on virulent strains using chromosome-only sequences
 
+## 研究背景与意义（中文）
+
+在近缘肺炎克雷伯菌（尤其是高风险谱系）中，近期HGT识别面临一个典型难题：
+
+- 宿主间进化距离很近，近期转移片段可提供的系统发育信息位点有限
+- 在这种场景下，`gene tree` 与 `species tree` 的“一致”并不总能证明“纯垂直继承”
+- 传统“树冲突法”并非错误，而是对“近缘、近期、模块化、质粒介导传播”的检测功效会下降
+
+因此，本项目采用的是“互补证据框架”，而不是“替代系统发育”：
+
+1. 用系统发育信息作为宿主背景约束（host background constraint）。
+2. 用区室与载体证据补足盲区：染色体/质粒分区、局部共线性、PTU/replicon、oriT/relaxase/T4SS、IS与融合线索。
+3. 用机制一致性支持传播推断：不仅回答“像不像HGT”，也回答“为什么能够发生传播”。
+
+这套框架的实际价值在于：
+
+- 对近缘菌中近期毒力模块传播更敏感
+- 对“non-conjugative 但可被 helper 动员”的真实场景更有解释力
+- 输出可直接用于流调汇报、风险分层和后续实验验证设计
+
+简要定位：
+
+- Kp-VirTracer is a **phylogeny-constrained, mechanism-aware** workflow for recent plasmid-borne virulence dissemination inference.
+
 ## Workflow Overview
 
 ```mermaid
