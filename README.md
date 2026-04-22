@@ -36,6 +36,89 @@ Hypervirulence in *K. pneumoniae* can be associated with plasmid-borne, chromoso
 
 - Kp-VirTracer is a **phylogeny-constrained, mechanism-aware** workflow for recent plasmid-borne virulence dissemination inference.
 
+## 理论边界与互补分析框架（详细版）
+
+### 核心判断（适用于论文与汇报）
+
+- 传统系统发育方法在近缘肺炎克雷伯菌中并不是“错误”，而是对近期HGT存在“系统性漏检”风险。
+- 在“同一物种、近缘谱系、近期传播、质粒模块化载荷”的场景下，`gene tree` 与 `species tree` 的一致性不能直接当作“纯垂直继承”的正证据。
+- 最稳妥的研究定位是：以系统发育作为宿主背景约束，再引入区室、局部上下文、质粒骨架与动员机制证据做互补推断。
+
+### 为什么会漏检：可识别性而非单纯算力问题
+
+- 供体和受体过近时，转移片段可提供的变异位点太少，难以重建稳定基因树。
+- 近期转移后的模块若继续在受体分支中垂直传播，最终树形可能仍与 `species tree` 相容。
+- 因此“缺乏冲突”常常表示“分辨率不足”，而不一定表示“没有HGT”。
+
+### 近缘Kp中的机制事实（与本项目直接相关）
+
+- pLVPK-like 等毒力质粒虽然常被标为 non-conjugative / non-mobilizable，但在真实生态中可被 helper 质粒动员。
+- IS 介导重排、融合质粒、耐药-毒力共整合是高频机制线索。
+- 所以需要同时追踪：`区室位置 + 骨架归属 + 动员元件 + 局部共线性`，而不只看单基因树冲突。
+
+### 方法学评价矩阵（从“能否识别近期近缘HGT”角度）
+
+| 方法类别 | 对近期近缘HGT敏感性 | 特异性 | 主要数据要求 | 主要局限 | 在本项目中的定位 |
+|---|---:|---:|---|---|---|
+| species-tree vs gene-tree 冲突 / reconciliation | 低-中 | 中-高 | 高质量核心比对与正交基因树 | 受 gene tree 噪声影响大 | 作为背景约束，不单独裁决 |
+| presence-absence / profile | 中 | 中 | 泛基因组矩阵 | 对机制解释能力有限 | 大队列初筛 |
+| 区室感知 + 局部共线性 | 高 | 中-高 | 可靠注释与邻域信息 | 阈值敏感，需对照 | 近期事件识别主轴 |
+| PTU / replicon / backbone 分型 | 中-高 | 中 | 质粒序列或高可信 bins | 新骨架可能无PTU | 追踪载体流动主轴 |
+| oriT/relaxase/T4CP/T4SS + IS/融合注释 | 对“能否传播”极高 | 中 | 完整或近完整质粒序列 | 需结合上下文解释 | 机制解释主轴 |
+| hybrid long-read plasmidomics | 真值层 | 最高 | 长读长+短读长 | 成本较高 | 关键节点确认层 |
+
+### 证据链建议（可直接用于结果章节）
+
+- `同PTU/同backbone`
+- `模块边界存在IS痕迹或融合线索`
+- `oriT/relaxase/T4SS或helper条件可满足`
+- `跨宿主背景但局部上下文高度相似`
+- `宿主树不能支持单次祖先继承`
+
+当以上证据共同成立时，应优先表述为：
+
+- `consistent with recent horizontal dissemination`
+- `recent-HGT-like`（而非“仅凭单证据即排除垂直遗传”）
+
+### 推荐可复现工作流（面向大队列）
+
+1. 样本质控与去冗余：QC、污染检查、MLST/Kleborate、同ST内近重复折叠。  
+2. 区室划分：MOB-suite 进行 plasmid binning 与 mobility 预测（用于初筛）。  
+3. 质粒骨架分型：COPLA/PTU + replicon/backbone 聚类。  
+4. 宿主背景系统发育：核心SNP + 去重组（如 Gubbins）构建背景树。  
+5. 模块级HGT初筛：以毒力模块为单位做 identity/coverage/跨背景筛选。  
+6. 局部上下文复核：共线性与邻域保守性分析，做阈值敏感性。  
+7. 传播机制注释：oriT/relaxase/T4CP/T4SS、IS、fusion/cointegration。  
+8. 真值确认：关键节点做 hybrid long-read 组装验证。  
+
+### 审稿友好型验证策略（建议在补充材料中实现）
+
+- 阈值敏感性：例如 SI cutoff 6/7/8、coverage/identity 多阈值复跑。
+- 空模型比较：随机置换宿主标签或邻域，评估是否显著高于随机。
+- 负对照模块：选择 housekeeping 或稳定染色体标记，验证框架不会“过判HGT”。
+- 关键机制验证：至少对代表性“non-mobilizable × helper”组合做实验验证。
+
+### 写作表达模板（可直接复用）
+
+中文：
+
+1. 本研究并不否定系统发育在宿主背景重建中的价值，而是将其作为约束层，并以区室/骨架/机制证据补足近期传播盲区。  
+2. 在近缘背景中，gene tree 与 species tree 的一致性不应直接解释为垂直继承的正证据。  
+3. 我们将相关事件表述为“recent-HGT-like / consistent with recent horizontal dissemination”，而非单证据绝对判定。  
+
+English:
+
+1. We treat host phylogeny as a background constraint and complement it with compartment-aware and mechanism-aware evidence.  
+2. In closely related strains, tree concordance should not be interpreted as definitive evidence of strict vertical inheritance.  
+3. We report events as consistent with recent horizontal dissemination rather than claiming exclusion of vertical inheritance from a single signal.  
+
+### 开放问题与局限
+
+- 无完整质粒装配时，fusion/cointegration/shared-backbone 结论属于高可信推断，而非最终证明。
+- 局部共线性破坏不专属于HGT，也可能来自重排/插入/缺失，需联合区室与机制证据解释。
+- oriT/relaxase/T4SS 的存在表示“潜在可传播性”，不等于“已发生传播”。
+- 公共数据库存在时间、地区和克隆组成偏倚，结论应以趋势与框架表达为主。
+
 ## Workflow Overview
 
 ```mermaid
