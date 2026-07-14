@@ -246,9 +246,10 @@ copla:
   script_path: "/abs/path/to/COPLA/bin/copla.py"
   pickle_path: "/abs/path/to/COPLA/databases/Copla_RS84/RS84f_sHSBM.pickle"
   fofn_path: "/abs/path/to/COPLA/databases/Copla_RS84/CoplaDB.fofn"
-  topology: "linear"
+  topology: "circular"
 ```
 
+> Default topology is **`circular`** (matches typical COPLA plasmid runs). Override in YAML if needed.
 ### How Users Can Locate Their Own COPLA Paths
 
 Run the following commands on the target server:
@@ -468,9 +469,9 @@ Interpretation:
 - `Location_A`, `Location_B`: gene location in each sample.
 - `Plasmid_A`, `Plasmid_B`: plasmid flag placeholders for plasmid-associated entries.
 - `HGT_Type`: event heuristic label (`location_switch`, `shared_plasmid_gene`, `shared_chromosomal_gene`).
-- `Confirmed`: heuristic confirmation flag using ANI/location consistency.
+- `Confirmed`: confirmation using ANI relatedness / location switch; for chromosomal synteny events also requires `Synteny_Index >= vertical_cutoff` (default 7).
 - `pident`, `qcov`: aggregated identity/coverage evidence from virulence hits.
-- `Synteny_Index`: placeholder/basic synteny score (current implementation baseline).
+- `Synteny_Index`: order-preserving flanking CDS score around **chromosomal** virulence genes in **ANI-Related** pairs only (Prodigal ± upstream/downstream CDS via blastp). Plasmid-only or unrelated pairs → `NA`.
 - `Evidence_Files`: primary files used for inference.
 
 ### `summary/final_summary.tsv`
@@ -500,14 +501,32 @@ Interpretation:
 - ANI input is reconstructed chromosome-only FASTA from MOB-suite chromosome contig IDs.
 - Relatedness is reported by threshold (`--ani-relatedness`, default from config).
 
+## Synteny Index (HGT stage)
+
+`Synteny_Index` is computed **only** when both conditions hold:
+
+1. The sample pair is ANI-**Related**
+2. The shared virulence gene has a **chromosome** hit in **both** samples
+
+Then the pipeline maps each hit to the overlapping Prodigal CDS, takes ordered upstream/downstream flanks (default 5+5), links proteins with `blastp`, and scores **order-preserving** homologous flanks (local inversion allowed). Plasmid-only shared genes are not scored (`NA`).
+
 ## PTU Calling (COPLA)
 
 - `mob_recon` is used for plasmid reconstruction and plasmid/chromosome labeling.
-- PTU is called by COPLA from extracted plasmid FASTA per sample via:
-  - `conda run -n <copla_env> python3 <copla.py> <query_fasta> <RS84f_sHSBM.pickle> <CoplaDB.fofn> <output_dir>`
+- PTU is called by COPLA from extracted plasmid FASTA per sample; default topology is **`circular`**.
 - COPLA is optional:
   - if available and configured, PTU/score are filled into `02_mobsuite/plasmid_manifest.tsv`
   - if unavailable/misconfigured, workflow continues and PTU fields remain `NA`
+
+## Current Implementation Status
+
+| Component | Status |
+|-----------|--------|
+| Six-stage main pipeline | Implemented and tested |
+| COPLA PTU (optional, default circular) | Implemented |
+| Chromosomal synteny index (related pairs) | Implemented |
+| HGT deduplication (`dedup.R`) | Placeholder |
+| AMR gene detection | Not implemented |
 
 ## Environment Validation
 

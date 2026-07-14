@@ -17,7 +17,7 @@ copla:
   script_path: "/abs/path/to/COPLA/bin/copla.py"
   pickle_path: "/abs/path/to/COPLA/databases/Copla_RS84/RS84f_sHSBM.pickle"
   fofn_path: "/abs/path/to/COPLA/databases/Copla_RS84/CoplaDB.fofn"
-  topology: "linear"
+  topology: "circular"
 
 input:
   fasta_extensions:
@@ -50,11 +50,14 @@ ani:
   kmer: 16
 
 synteny:
+  # Chromosomal flanking CDS around virulence genes (ANI-Related pairs only).
   upstream_window: 5
   downstream_window: 5
-  cutoff: 7
   upstream_cds: 5
   downstream_cds: 5
+  protein_identity: 70
+  protein_coverage: 70
+  cutoff: 7
   vertical_cutoff: 7
 
 hgt:

@@ -145,7 +145,12 @@ run_kp_virtracer <- function(input,
     mobsuite_dir = file.path(output, "02_mobsuite")
   )
   log_info("Stage 6/6: inferring HGT events and writing summaries.")
-  hgt <- detect_hgt_events(NULL, vir, ani, cfg, file.path(output, "06_hgt"), annotation_df = ann)
+  hgt <- detect_hgt_events(
+    NULL, vir, ani, cfg, file.path(output, "06_hgt"),
+    annotation_df = ann,
+    annotation_dir = file.path(output, "05_annotation"),
+    tools = tools
+  )
 
   readr::write_tsv(ani, file.path(output, "04_ani", "ani_results.tsv"))
   readr::write_tsv(hgt, file.path(output, "06_hgt", "hgt_events.tsv"))

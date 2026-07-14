@@ -189,7 +189,7 @@ resolve_copla_runtime <- function(cfg) {
   conda_env <- dplyr::coalesce(c0$conda_env, "copla")
   conda_bin <- dplyr::coalesce(c0$conda_bin, "conda")
   python_bin <- dplyr::coalesce(c0$python_bin, "python3")
-  topology <- dplyr::coalesce(c0$topology, "linear")
+  topology <- dplyr::coalesce(c0$topology, "circular")
   project_root <- normalizePath(dirname(dirname(script_path)), winslash = "/", mustWork = FALSE)
 
   if (is.null(script_path) || !nzchar(script_path) || !file.exists(script_path)) {

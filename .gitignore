@@ -4,8 +4,14 @@
 .DS_Store
 .idea/
 .vscode/
+.cursor/
 *.Rproj.user
 man/
 docs/
 pkgdown/
 tmp/
+*.tar.gz
+.Rcheck/
+KpVirTracer.Rcheck/
+.env
+.Renviron

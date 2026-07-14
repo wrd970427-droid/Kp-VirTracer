@@ -112,5 +112,6 @@ run_prodigal_annotation <- function(sample_manifest, virulence_hits, cfg, out_di
       .groups = "drop"
     )
   readr::write_tsv(summary_tbl, file.path(out_dir, "annotation_summary.tsv"))
+  attr(ann_rows, "annotation_dir") <- normalizePath(out_dir, winslash = "/", mustWork = FALSE)
   ann_rows
 }
