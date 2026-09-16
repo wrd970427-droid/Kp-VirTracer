@@ -1,0 +1,42 @@
+# COPLA — pinned dependency snapshot (optional companion env)
+#
+# Snapshot date : 2026-07-14
+# Source env    : /root/miniconda3/envs/copla
+# Critical pin  : python=3.8.19  (do NOT upgrade; graph-tool / sHSBM depend on it)
+#
+# Recreate:
+#   mamba env create -f envs/copla.pinned.yml
+# Full freeze (all transitive deps):
+#   mamba env create -f envs/copla.lock.yml
+#
+# After create, point Kp-VirTracer YAML `copla.conda_env` to this env name.
+
+name: copla
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  - python=3.8.19
+  - pip=24.3.1
+  - biopython=1.83
+  - blast=2.9.0
+  - prodigal=2.6.3
+  - plasmidfinder=2.1.6
+  - hmmer=3.2.1
+  - graph-tool=2.37
+  - numpy=1.24.4
+  - pandas=2.0.3
+  - scipy=1.10.1
+  - matplotlib-base=3.7.3
+  - boost=1.74.0
+  - boost-cpp=1.74.0
+  - tabulate=0.9.0
+  - requests=2.32.3
+  - cgecore=1.5.6
+  - kma=1.4.15
+  - sparsehash=2.0.4
+  - pycairo=1.25.0
+  - cairomm=1.14.4
+  - gtk3=3.24.37

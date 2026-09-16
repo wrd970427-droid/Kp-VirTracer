@@ -1,4 +1,9 @@
 name: kpvirtracer
+# Flexible install recipe (version ranges).
+# For reproducible / backup installs use:
+#   environment.pinned.yml  (direct deps, recommended)
+#   environment.lock.yml    (full freeze)
+# See ENVIRONMENT.md for details.
 channels:
   - conda-forge
   - bioconda

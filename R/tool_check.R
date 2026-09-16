@@ -12,6 +12,22 @@ resolve_tool_path <- function(path_or_bin) {
   Sys.which(path_or_bin)
 }
 
+#' Safe lookup in named tool vector/list (missing names -> NULL, no error).
+get_tool <- function(tools, name) {
+  if (is.null(tools) || is.null(name) || !nzchar(name)) {
+    return(NULL)
+  }
+  nms <- names(tools)
+  if (is.null(nms) || !(name %in% nms)) {
+    return(NULL)
+  }
+  val <- unname(tools[[name]])
+  if (length(val) == 0 || is.null(val) || is.na(val) || !nzchar(val)) {
+    return(NULL)
+  }
+  as.character(val[[1]])
+}
+
 check_required_tools <- function(cfg) {
   check_external_tools(cfg)
 }

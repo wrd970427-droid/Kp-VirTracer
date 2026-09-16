@@ -89,9 +89,13 @@ flowchart TD
 git clone https://github.com/wrd970427-droid/Kp-VirTracer.git
 cd Kp-VirTracer
 
-mamba env create -f environment.yml
+# Recommended reproducible install (pinned versions; see ENVIRONMENT.md)
+mamba env create -f environment.pinned.yml
 mamba activate kpvirtracer
-# or: bash install_env.sh
+
+# Alternatives:
+#   mamba env create -f environment.yml          # flexible ranges
+#   mamba env create -f environment.lock.yml     # full freeze
 
 Rscript install_package.R
 bash scripts/check_env.sh
@@ -102,6 +106,14 @@ Reinstall after modifying package source:
 ```bash
 Rscript install_package.R
 ```
+
+Pinned backup files:
+
+| File | Use |
+|------|-----|
+| `environment.pinned.yml` | Direct dependency pins (recommended rebuild) |
+| `environment.lock.yml` | Full transitive freeze |
+| `envs/copla.pinned.yml` / `envs/copla.lock.yml` | Optional COPLA env pins |
 
 ### Optional: COPLA
 

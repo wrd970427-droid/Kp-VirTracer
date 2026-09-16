@@ -76,14 +76,21 @@ detect_hgt_events <- function(sample_pairs,
   synteny_cutoff <- as.integer(dplyr::coalesce(syn_cfg$vertical_cutoff, syn_cfg$cutoff, 7L))
   annotation_ctx <- NULL
   if (!is.null(annotation_dir) && nzchar(annotation_dir) && dir.exists(annotation_dir)) {
-    blastp_bin <- NULL
-    if (!is.null(tools) && !is.null(tools[["blastp"]]) && nzchar(tools[["blastp"]])) {
-      blastp_bin <- tools[["blastp"]]
-    } else if (!is.null(tools) && !is.null(tools[["blastn"]])) {
-      # blastp usually sits next to blastn
-      cand <- file.path(dirname(tools[["blastn"]]), "blastp")
-      if (file.exists(cand)) {
-        blastp_bin <- cand
+    blastp_bin <- get_tool(tools, "blastp")
+    if (is.null(blastp_bin)) {
+      blastn_bin <- get_tool(tools, "blastn")
+      if (!is.null(blastn_bin)) {
+        # blastp usually sits next to blastn
+        cand <- file.path(dirname(blastn_bin), "blastp")
+        if (file.exists(cand)) {
+          blastp_bin <- cand
+        }
+      }
+    }
+    if (is.null(blastp_bin)) {
+      wh <- Sys.which("blastp")
+      if (nzchar(wh)) {
+        blastp_bin <- wh
       }
     }
     annotation_ctx <- list(
