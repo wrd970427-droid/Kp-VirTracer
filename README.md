@@ -30,33 +30,9 @@ Hypervirulence in *K. pneumoniae* may be encoded on plasmids, chromosomes, or bo
 
 Six sequential stages (minimum **two** input assemblies):
 
-```mermaid
-flowchart TD
-    A["Input assemblies<br/>*.fa / *.fasta / *.fna"] --> B["01 Kleborate"]
-    A --> C["02 MOB-suite"]
-    C --> C2["COPLA PTU<br/>optional"]
-    A --> D["03 Virulence BLAST"]
-    C --> D
-    D --> G["Virulence typing<br/>p / c / pc / nKp"]
-    G --> H["04 fastANI<br/>virulent chromosomes only"]
-    A --> L["05 Prodigal"]
-    D --> M["06 HGT + synteny"]
-    H --> M
-    L --> M
-    G --> N["summary/"]
-    C2 --> N
-    H --> N
-    M --> N
-```
+![Kp-VirTracer pipeline overview](figures/Figure1.png)
 
-| Stage | Module | Role |
-|------:|--------|------|
-| 1 | Kleborate | Species / ST / virulence score |
-| 2 | MOB-suite (+ optional COPLA) | Contig molecule type, plasmids, PTU |
-| 3 | BLAST | Virulence hits with location labels |
-| 4 | fastANI | Relatedness among virulent chromosomes |
-| 5 | Prodigal | Genome CDS annotation (GFF / FAA) |
-| 6 | HGT | Shared-gene events; chromosomal synteny when applicable |
+High-resolution source: [`figures/Figure1.tif`](figures/Figure1.tif)
 
 ---
 
