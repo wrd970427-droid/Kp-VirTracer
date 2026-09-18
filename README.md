@@ -30,9 +30,9 @@ Hypervirulence in *K. pneumoniae* may be encoded on plasmids, chromosomes, or bo
 
 Six sequential stages (minimum **two** input assemblies):
 
-![Kp-VirTracer pipeline overview](figures/Figure1.png)
+![Kp-VirTracer pipeline overview](figures/Figure1_Kp-virTracer.png)
 
-High-resolution source: [`figures/Figure1.tif`](figures/Figure1.tif)
+High-resolution source: [`figures/Figure1_Kp-virTracer.tif`](figures/Figure1_Kp-virTracer.tif)
 
 ---
 
